@@ -35,13 +35,14 @@ namespace op
          * with the net.
          * In case of >1 scales, then each scale is right- and bottom-padded to fill the greatest resolution. The
          * scales are sorted from bigger to smaller.
-         * Size: #scales x 3 x input_net_height x input_net_width
+         * Vector size: #scales
+         * Each array size: 3 x input_net_height x input_net_width
          */
-        Array<float> inputNetData;
+        std::vector<Array<float>> inputNetData;
 
         /**
          * Rendered image in Array<float> format.
-         * It consists of a blending of the inputNetData and the pose/body part(s) heatmap/PAF(s).
+         * It consists of a blending of the cvInputData and the pose/body part(s) heatmap/PAF(s).
          * If rendering is disabled (e.g. `no_render_pose` flag in the demo), then outputData will be empty.
          * Size: 3 x output_net_height x output_net_width
          */
@@ -59,10 +60,19 @@ namespace op
         /**
          * Body pose (x,y,score) locations for each person in the image.
          * It has been resized to the desired output resolution (e.g. `resolution` flag in the demo).
-         * If outputData is empty, then cvOutputData will also be empty.
          * Size: #people x #body parts (e.g. 18 for COCO or 15 for MPI) x 3 ((x,y) coordinates + score)
          */
         Array<float> poseKeypoints;
+
+        /**
+         * Body pose global confidence/score for each person in the image.
+         * It does not only consider the score of each body keypoint, but also the score of each PAF association.
+         * Optimized for COCO evaluation metric.
+         * It will highly penalyze people with missing body parts (e.g. cropped people on the borders of the image).
+         * If poseKeypoints is empty, then poseScores will also be empty.
+         * Size: #people
+         */
+        Array<float> poseScores;
 
         /**
          * Body pose heatmaps (body parts, background and/or PAFs) for the whole image.
