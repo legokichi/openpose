@@ -168,6 +168,26 @@ DEFINE_string(write_heatmaps,           "",             "Directory to write body
 DEFINE_string(write_heatmaps_format,    "png",          "File extension and format for `write_heatmaps`, analogous to `write_images_format`."
                                                         " Recommended `png` or any compressed and lossless format.");
 
+class ZMQReader : public op::Producer {
+public:
+  explicit ZMQReader(): Producer{op::ProducerType::Video} {}
+  ~ZMQReader(){}
+  std::string getFrameName(){ return ""; }
+  inline bool isOpened() const { return true; }
+  void release(){}
+  inline double get(const int capProperty){ return get(capProperty); }
+  inline void set(const int capProperty, const double value){ set(capProperty, value); }
+  inline double get(const op::ProducerProperty property){ return op::Producer::get(property); }
+  inline void set(const op::ProducerProperty property, const double value){ op::Producer::set(property, value); }
+protected:
+  cv::Mat getRawFrame(){
+    cv::Mat frame;
+    return frame;
+  }
+private:
+  DELETE_COPY(ZMQReader);
+};
+
 int openPoseDemo()
 {
     // logging_level
@@ -189,8 +209,7 @@ int openPoseDemo()
     // handNetInputSize
     const auto handNetInputSize = op::flagsToPoint(FLAGS_hand_net_resolution, "368x368 (multiples of 16)");
     // producerType
-    const auto producerSharedPtr = op::flagsToProducer(FLAGS_image_dir, FLAGS_video, FLAGS_ip_camera, FLAGS_camera,
-                                                       FLAGS_camera_resolution, FLAGS_camera_fps);
+    const auto producerSharedPtr = std::make_shared<ZMQReader>();
     // poseModel
     const auto poseModel = op::flagsToPoseModel(FLAGS_model_pose);
     // keypointScale
